@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3 uid="uid://c72ncrq1a622k"]
+
+[ext_resource type="FontFile" uid="uid://cai7s8vpiatwn" path="res://IBM Plex Mono/IBMPlexMono-Regular.ttf" id="1_ydyfh"]
+
+[node name="InputHistory" type="Label"]
+theme_override_colors/font_color = Color(0.691357, 0.691357, 0.691357, 1)
+theme_override_fonts/font = ExtResource("1_ydyfh")
+theme_override_font_sizes/font_size = 24
+text = " > This is what the user typed"
