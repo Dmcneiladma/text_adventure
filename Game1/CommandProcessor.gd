@@ -120,25 +120,34 @@ func talk(second_word: String) -> String:
 func give(second_word: String) -> String:
 	if second_word == " ":
 		return "Give what?"
-	
+
 	var has_item = false
 	for item in player.inventory:
 		if second_word.to_lower() == item.item_name.to_lower():
 			has_item = true
-	
+
 	if not has_item:
 		return "You don't have that item."
-	
+
 	for npc in current_room.npcs:
 		if npc.quest_item != null and second_word.to_lower() == npc.quest_item.item_name.to_lower():
 			npc.has_received_quest_item = true
+			if npc.quest_reward != null:
+				var reward = npc.quest_reward
+				if "is_locked" in reward:   #duck typing that could be part of quest script/node/resource
+					reward.is_locked = false
+				else:
+					printerr("Warning - tried to have a quest reward that isn't implemented")
+			for item in player.inventory:
+				if second_word.to_lower() == item.item_name.to_lower():
+					player.drop_item(item)
 			return "You give the %s to the %s." % [second_word, npc.npc_name]
-	
+
 	return "Nobody here wants that."
 
 
 func help() -> String:
-	return "You can use these commands: go [location], take [item], use [item], drop [item], talk [npc], give [item] inventory, help"
+	return "You can use these commands: go [location], take [item], use [item], drop [item], talk [npc], give [item], inventory, help"
 
 func change_room(new_room: GameRoom) -> String:
 	current_room = new_room

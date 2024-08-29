@@ -32,6 +32,7 @@ func _ready() -> void:
 	exit = $Gate.connect_exit_locked("forest", $Forest, "gate")
 	var guard = load_npc("Guard")
 	$Gate.add_npc(guard)
+	guard.quest_reward = exit
 
 
 
