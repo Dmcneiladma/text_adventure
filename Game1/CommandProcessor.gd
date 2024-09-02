@@ -1,14 +1,18 @@
 extends Node
 
-
 var current_room = null
 var player = null
+var replay_manager = null
 
 @warning_ignore("shadowed_variable")
-func initialize(starting_room, player) -> String:
+func initialize(starting_room, player, replay_manager) -> String:
+	if starting_room == null or player == null or replay_manager == null:
+		push_error("Starting room, player, or replay manager cannot be null")
+		return "Initialization error"
 	self.player = player
+	self.replay_manager = replay_manager
+	self.current_room = null  # Reset current room
 	return change_room(starting_room)
-
 
 func process_command(input: String) -> String:
 	var words = input.split(" ", false)
@@ -37,8 +41,26 @@ func process_command(input: String) -> String:
 			return give(second_word)
 		"help" :
 			return help()
+		"save":
+			return save_game()
+		"load":
+			return load_game()
 		_:
 			return "Unrecognized command- please try again."
+
+func save_game() -> String:
+	if replay_manager == null:
+		push_error("Replay manager is not initialized")
+		return "Save failed"
+	replay_manager.save_game()
+	return "Game saved successfully."
+
+func load_game() -> String:
+	if replay_manager == null:
+		push_error("Replay manager is not initialized")
+		return "Load failed"
+	replay_manager.load_game()
+	return "Game loaded successfully."
 
 func go(second_word: String) -> String:
 	if second_word == " ":
@@ -47,14 +69,11 @@ func go(second_word: String) -> String:
 	if current_room.exits.keys().has(second_word):
 		var exit = current_room.exits[second_word]
 		if exit.is_locked:
-		##this is for turning on one way locking. del if above, unlock if below
-		#if exit.is_other_room_locked(current_room):
 			return "The way %s is currently locked!" % second_word
 		var change_response = change_room(exit.get_other_room(current_room))
 		return "\n".join(PackedStringArray(["You go %s." % second_word, change_response]))
 	else:
 		return "This room has no exit in that direction!"
-
 
 func take(second_word: String) -> String:
 	if second_word == " ":
@@ -66,7 +85,6 @@ func take(second_word: String) -> String:
 			player.take_item(item)
 			return "You take the " + item.item_name
 	return "You don't see that in this room."
-
 
 func drop(second_word: String) -> String:
 	if second_word == " ":
@@ -80,10 +98,8 @@ func drop(second_word: String) -> String:
 
 	return "You don't have that item."
 
-
 func inventory() -> String:
 	return player.get_inventory_list()
-
 
 func use(second_word: String) -> String:
 	if second_word == " ":
@@ -104,7 +120,6 @@ func use(second_word: String) -> String:
 	
 	return "You don't have that item."
 
-
 func talk(second_word: String) -> String:
 	if second_word == "":
 		return "Talk to who?"
@@ -115,7 +130,6 @@ func talk(second_word: String) -> String:
 			return npc.npc_name + ": \"" + dialog + "\""
 	
 	return "That person is not in this room."
-
 
 func give(second_word: String) -> String:
 	if second_word == " ":
@@ -145,10 +159,12 @@ func give(second_word: String) -> String:
 
 	return "Nobody here wants that."
 
-
 func help() -> String:
-	return "You can use these commands: go [location], take [item], use [item], drop [item], talk [npc], give [item], inventory, help"
+	return "You can use these commands: go [location], take [item], use [item], drop [item], talk [npc], give [item], inventory, help, save, load"
 
 func change_room(new_room: GameRoom) -> String:
+	if new_room == null:
+		push_error("New room cannot be null")
+		return "Change room failed"
 	current_room = new_room
 	return new_room.get_full_description()

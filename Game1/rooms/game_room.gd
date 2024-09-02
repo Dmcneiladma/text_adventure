@@ -123,3 +123,9 @@ func _connect_exit(direction: String, room: GameRoom, is_locked: bool = false, r
 				printerr("Tried to connect invalid direction: %s" % direction)
 
 	return exit
+
+
+func reset():
+	exits.clear()
+	npcs.clear()
+	items.clear()
