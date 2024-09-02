@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="Enemy" load_steps=2 format=3 uid="uid://chbfbvixd520s"]
+
+[ext_resource type="Script" path="res://enemies/Enemy.gd" id="1_tynkx"]
+
+[resource]
+script = ExtResource("1_tynkx")
+enemy_name = "Enemy"
+health = 50
+max_health = 50
+damage = 5
+defense = 2
+agility = 5
+experience_reward = 10
+loot_table_data = Array[String](["HealingPotion"])

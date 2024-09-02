@@ -1,7 +1,9 @@
 extends Node
 
-
-enum  ItemTypes {
+enum ItemTypes {
 	KEY,
+	WEAPON,
+	CONSUMABLE,
 	QUEST_ITEM,
+	POTION
 }

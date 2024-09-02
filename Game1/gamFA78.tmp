@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3 uid="uid://hdpne84o6uxu"]
+[gd_scene load_steps=14 format=3 uid="uid://hdpne84o6uxu"]
 
 [ext_resource type="Script" path="res://game.gd" id="1_03vd0"]
 [ext_resource type="Script" path="res://input/Input.gd" id="1_p87k6"]
@@ -8,7 +8,6 @@
 [ext_resource type="Script" path="res://rooms/RoomManager.gd" id="3_76k62"]
 [ext_resource type="PackedScene" uid="uid://dk73llp40kxjc" path="res://rooms/game_room.tscn" id="3_85633"]
 [ext_resource type="Script" path="res://ReplayManager.gd" id="8_ktol1"]
-[ext_resource type="Script" path="res://CombatManager.gd" id="9_nkpey"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_v6ij3"]
 bg_color = Color(0.0755101, 0.0755101, 0.0755101, 1)
@@ -187,9 +186,6 @@ script = ExtResource("1_p87k6")
 
 [node name="ReplayManager" type="Node" parent="."]
 script = ExtResource("8_ktol1")
-
-[node name="CombatManager" type="Node" parent="."]
-script = ExtResource("9_nkpey")
 
 [connection signal="text_submitted" from="Background/MarginContainer/Rows/InputArea/HBoxContainer/Input" to="." method="_on_input_text_submitted"]
 [connection signal="text_submitted" from="Background/MarginContainer/Rows/InputArea/HBoxContainer/Input" to="Background/MarginContainer/Rows/InputArea/HBoxContainer/Input" method="_on_Input_text_submitted"]

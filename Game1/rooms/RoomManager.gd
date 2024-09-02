@@ -1,8 +1,9 @@
 extends Node
 
-
 func _ready() -> void:
+	setup_rooms()
 
+func setup_rooms():
 	$StartingShed.connect_exit_unlocked("west", $BackOfInn)
 
 	$BackOfInn.connect_exit_unlocked("path", $VillageSquare)
@@ -12,7 +13,6 @@ func _ready() -> void:
 	$VillageSquare.connect_exit_unlocked("west", $Field)
 	
 	var sword = load_item("TrainingSword")
-	#sword.use_value = exit
 	$Field.add_item(sword)
 
 	$InnDoor.connect_exit_unlocked("inside", $InnInside)
@@ -22,23 +22,41 @@ func _ready() -> void:
 	$InnInside.connect_exit_unlocked("south", $InnKitchen)
 	$InnInside.connect_exit_unlocked("room", $InnRoom)
 	
-	var exit = $InnKitchen.connect_exit_locked("south", $BackOfInn)
+	var kitchen_exit = $InnKitchen.connect_exit_locked("south", $BackOfInn, "door")
 	var key = load_item("InnKitchenKey")
-	key.use_value = exit
+	key.unlocks = kitchen_exit
 	$InnKitchen.add_item(key)
-	
 
+	# Set up the gate exit and guard quest
+	var gate_exit = $Gate.connect_exit_locked("forest", $Forest, "gate")
 	
-	exit = $Gate.connect_exit_locked("forest", $Forest, "gate")
+	var guard_quest_reward = QuestReward.new()
+	guard_quest_reward.add_reward(QuestReward.RewardType.UNLOCK_EXIT, gate_exit)
+	guard_quest_reward.add_reward(QuestReward.RewardType.GIVE_ITEM, load_item("Longsword"))
+	
 	var guard = load_npc("Guard")
+	guard.quest_item = sword  # Set the quest item to be the training sword
+	guard.quest_reward = guard_quest_reward
 	$Gate.add_npc(guard)
-	guard.quest_reward = exit
 
+	# Add an enemy to a room
+	var goblin = load_enemy("Goblin")
+	$Forest.add_enemy(goblin)
 
+	# Add a healing potion to the Starting Shed
+	var healing_potion = load_item("HealingPotion")
+	$StartingShed.add_item(healing_potion)
 
 func load_item(item_name: String):
 	return load("res://items/" + item_name + ".tres")
 
-
 func load_npc(npc_name: String):
 	return load("res://npcs/" + npc_name + ".tres")
+
+func load_enemy(enemy_name: String):
+	return load("res://enemies/" + enemy_name + ".tres")
+
+func reset_rooms():
+	for room in get_children():
+		room.reset()
+	setup_rooms()

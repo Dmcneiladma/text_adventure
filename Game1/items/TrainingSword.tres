@@ -6,3 +6,4 @@
 script = ExtResource("1_2nmbt")
 item_name = "sword"
 item_type = 1
+damage = 1
