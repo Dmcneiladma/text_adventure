@@ -1,0 +1,117 @@
+[gd_scene load_steps=12 format=3 uid="uid://hdpne84o6uxu"]
+
+[ext_resource type="Script" path="res://game.gd" id="1_03vd0"]
+[ext_resource type="Script" path="res://Input.gd" id="1_p87k6"]
+[ext_resource type="FontFile" uid="uid://cai7s8vpiatwn" path="res://IBM Plex Mono/IBMPlexMono-Regular.ttf" id="1_v1gb1"]
+[ext_resource type="Script" path="res://CommandProcessor.gd" id="2_btnbo"]
+[ext_resource type="Script" path="res://RoomManager.gd" id="3_76k62"]
+[ext_resource type="PackedScene" uid="uid://dk73llp40kxjc" path="res://game_room.tscn" id="3_85633"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_v6ij3"]
+bg_color = Color(0.0755101, 0.0755101, 0.0755101, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_y3qd3"]
+bg_color = Color(0.250818, 0.250818, 0.250818, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_02ofc"]
+bg_color = Color(0.289741, 0.289741, 0.289741, 1)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_daclj"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_j3g0i"]
+
+[node name="Game" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_03vd0")
+
+[node name="CommandProcessor" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("2_btnbo")
+
+[node name="RoomManager" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("3_76k62")
+
+[node name="HouseRoom" parent="RoomManager" instance=ExtResource("3_85633")]
+offset_left = 127.0
+offset_top = -438.0
+offset_right = 377.0
+offset_bottom = -238.0
+room_name = "a house"
+room_description = "a random house that you do not recognize."
+
+[node name="OutsideRoom" parent="RoomManager" instance=ExtResource("3_85633")]
+offset_left = 489.0
+offset_top = -435.0
+offset_right = 739.0
+offset_bottom = -235.0
+room_name = "outside"
+room_description = "you are outside in the village."
+
+[node name="Background" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_v6ij3")
+
+[node name="MarginContainer" type="MarginContainer" parent="Background"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="Rows" type="VBoxContainer" parent="Background/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="GameInfo" type="PanelContainer" parent="Background/MarginContainer/Rows"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_y3qd3")
+
+[node name="Scroll" type="ScrollContainer" parent="Background/MarginContainer/Rows/GameInfo"]
+unique_name_in_owner = true
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="HistoryRows" type="VBoxContainer" parent="Background/MarginContainer/Rows/GameInfo/Scroll"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="InputArea" type="PanelContainer" parent="Background/MarginContainer/Rows"]
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_02ofc")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Background/MarginContainer/Rows/InputArea"]
+layout_mode = 2
+
+[node name="Caret" type="Label" parent="Background/MarginContainer/Rows/InputArea/HBoxContainer"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("1_v1gb1")
+theme_override_font_sizes/font_size = 28
+text = " > "
+
+[node name="Input" type="LineEdit" parent="Background/MarginContainer/Rows/InputArea/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_fonts/font = ExtResource("1_v1gb1")
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxEmpty_daclj")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_j3g0i")
+max_length = 60
+caret_blink = true
+script = ExtResource("1_p87k6")
+
+[connection signal="text_submitted" from="Background/MarginContainer/Rows/InputArea/HBoxContainer/Input" to="." method="_on_input_text_submitted"]
+[connection signal="text_submitted" from="Background/MarginContainer/Rows/InputArea/HBoxContainer/Input" to="Background/MarginContainer/Rows/InputArea/HBoxContainer/Input" method="_on_Input_text_submitted"]
