@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="NPC" load_steps=3 format=3 uid="uid://c1l546qb1pgq3"]
+
+[ext_resource type="Resource" uid="uid://4fpv6p5vbjla" path="res://items/TrainingSword.tres" id="1_apl7b"]
+[ext_resource type="Script" path="res://npcs/NPC.gd" id="1_lalts"]
+
+[resource]
+script = ExtResource("1_lalts")
+npc_name = "guard"
+initial_dialog = "Who are you? Oh, the innkeeper sent you? well i may have a weapon lying around here somewhere for you. I make 'em from what I can find or make around here. We train in the field west of the square. I'd check there first."
+post_quest_dialog = "Nice work! Oh, that's just a training sword. Here, give me that and take my extra short sword. It's better than nothing. I'll let you go through the gate to the forest now. Just watch for the Children of the Forest. They're nastly little bastards. *he shows a scar on his neck that's been hidden by his collar*"
+quest_item = ExtResource("1_apl7b")

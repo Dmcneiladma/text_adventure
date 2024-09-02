@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="NPC" load_steps=2 format=3 uid="uid://g2vh6e04bf3m"]
+
+[ext_resource type="Script" path="res://npcs/NPC.gd" id="1_ni3b1"]
+
+[resource]
+script = ExtResource("1_ni3b1")
+npc_name = "innkeeper"
+initial_dialog = "Hello! You look new around here. Strange place this is. Dangerous, to say the least. You should go talk to the guard about finding a weapon for yourself."
+post_quest_dialog = ""

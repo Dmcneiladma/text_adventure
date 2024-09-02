@@ -1,0 +1,16 @@
+[gd_scene load_steps=4 format=3 uid="uid://bo2w6oemwars0"]
+
+[ext_resource type="Script" path="res://input/InputResponse.gd" id="1_ob4h1"]
+[ext_resource type="PackedScene" uid="uid://c72ncrq1a622k" path="res://input/input_history.tscn" id="2_qllou"]
+[ext_resource type="PackedScene" uid="uid://bk7qm31l8emao" path="res://input/response.tscn" id="3_mql7u"]
+
+[node name="InputResponse" type="VBoxContainer"]
+theme_override_constants/separation = -5
+alignment = 2
+script = ExtResource("1_ob4h1")
+
+[node name="InputHistory" parent="." instance=ExtResource("2_qllou")]
+layout_mode = 2
+
+[node name="Response" parent="." instance=ExtResource("3_mql7u")]
+layout_mode = 2

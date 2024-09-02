@@ -1,0 +1,191 @@
+[gd_scene load_steps=14 format=3 uid="uid://hdpne84o6uxu"]
+
+[ext_resource type="Script" path="res://game.gd" id="1_03vd0"]
+[ext_resource type="Script" path="res://input/Input.gd" id="1_p87k6"]
+[ext_resource type="FontFile" uid="uid://cai7s8vpiatwn" path="res://IBM Plex Mono/IBMPlexMono-Regular.ttf" id="1_v1gb1"]
+[ext_resource type="Script" path="res://Player.gd" id="2_5d1u8"]
+[ext_resource type="Script" path="res://CommandProcessor.gd" id="2_btnbo"]
+[ext_resource type="Script" path="res://rooms/RoomManager.gd" id="3_76k62"]
+[ext_resource type="PackedScene" uid="uid://dk73llp40kxjc" path="res://rooms/game_room.tscn" id="3_85633"]
+[ext_resource type="Script" path="res://ReplayManager.gd" id="8_ktol1"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_v6ij3"]
+bg_color = Color(0.0755101, 0.0755101, 0.0755101, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_y3qd3"]
+bg_color = Color(0.250818, 0.250818, 0.250818, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_02ofc"]
+bg_color = Color(0.289741, 0.289741, 0.289741, 1)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_j3g0i"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_daclj"]
+
+[node name="Game" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_03vd0")
+
+[node name="Player" type="Node" parent="."]
+script = ExtResource("2_5d1u8")
+
+[node name="CommandProcessor" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("2_btnbo")
+
+[node name="RoomManager" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("3_76k62")
+
+[node name="StartingShed" parent="RoomManager" instance=ExtResource("3_85633")]
+offset_left = 1311.0
+offset_top = -325.0
+offset_right = 1561.0
+offset_bottom = -125.0
+room_name = "a shed"
+room_description = "a storage shed behind a large building that appears to be an inn. There is a door to the inn and some storage crates to the west"
+
+[node name="BackOfInn" parent="RoomManager" instance=ExtResource("3_85633")]
+offset_left = 1024.0
+offset_top = -323.0
+offset_right = 1274.0
+offset_bottom = -123.0
+room_name = "the back of the inn"
+room_description = "the back door of the inn. surrounded by crates and other storage that the innkeeper must be keeping outside. There is a door to the north that leads into the inn, and a path that goes towards the village square."
+
+[node name="VillageSquare" parent="RoomManager" instance=ExtResource("3_85633")]
+offset_left = 331.0
+offset_top = -849.0
+offset_right = 583.0
+offset_bottom = -641.0
+room_name = "the village square"
+room_description = "the main square of the village. To the south is the path towards the shed and back of the inn. The main inn door is to the east, and there is a field to the west"
+
+[node name="InnDoor" parent="RoomManager" instance=ExtResource("3_85633")]
+offset_left = 633.0
+offset_top = -837.0
+offset_right = 883.0
+offset_bottom = -637.0
+room_name = "the inn door"
+room_description = "the main entrance to the inn. A sign outside says \"The Three Monkeys Inn\" "
+
+[node name="InnInside" parent="RoomManager" instance=ExtResource("3_85633")]
+custom_minimum_size = Vector2(400, 0)
+offset_left = 931.0
+offset_top = -908.0
+offset_right = 1331.0
+offset_bottom = -600.0
+room_name = "the inn"
+room_description = "the main area inside the inn. There are a few nondescript villagers drinking at the tables around the room, but it isn't busy at the moment. The innkeeper is standing behind the bar, waiting to serve customers. There is a door to the kitchen to the south, and a door back to the village square to the west"
+
+[node name="InnKitchen" parent="RoomManager" instance=ExtResource("3_85633")]
+custom_minimum_size = Vector2(350, 0)
+offset_left = 970.0
+offset_top = -562.0
+offset_right = 1320.0
+offset_bottom = -354.0
+room_name = "the inn's kitchen"
+room_description = "the kitchen of the inn. The cook isn't anywhere to be found - the room is empty, but a stew is cooking over the hearth. There is a door on the south wall that seems to go outside, and a door to the north back into the inn proper"
+
+[node name="Gate" parent="RoomManager" instance=ExtResource("3_85633")]
+offset_left = 322.0
+offset_top = -1082.0
+offset_right = 572.0
+offset_bottom = -882.0
+room_name = "the town gate"
+room_description = "the town gate. It leads out to the forest to the north. A guard stands nearby watching everyone who comes by. The village is back toward the south"
+
+[node name="Field" parent="RoomManager" instance=ExtResource("3_85633")]
+offset_left = 13.0
+offset_top = -849.0
+offset_right = 263.0
+offset_bottom = -649.0
+room_name = "a field"
+room_description = "a field of grass and flowers next to the village. The village is back to the east"
+
+[node name="Forest" parent="RoomManager" instance=ExtResource("3_85633")]
+offset_left = 322.0
+offset_top = -1325.0
+offset_right = 572.0
+offset_bottom = -1125.0
+room_name = "the forest"
+room_description = "the forest outside of town. You've made it out of town!"
+
+[node name="InnRoom" parent="RoomManager" instance=ExtResource("3_85633")]
+offset_left = 1392.0
+offset_top = -841.0
+offset_right = 1642.0
+offset_bottom = -641.0
+room_name = "your room"
+room_description = "a cozy area just for you to sleep in. You feel safe here"
+
+[node name="Background" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_v6ij3")
+
+[node name="MarginContainer" type="MarginContainer" parent="Background"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="Rows" type="VBoxContainer" parent="Background/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="GameInfo" type="PanelContainer" parent="Background/MarginContainer/Rows"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_y3qd3")
+
+[node name="Scroll" type="ScrollContainer" parent="Background/MarginContainer/Rows/GameInfo"]
+unique_name_in_owner = true
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="HistoryRows" type="VBoxContainer" parent="Background/MarginContainer/Rows/GameInfo/Scroll"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="InputArea" type="PanelContainer" parent="Background/MarginContainer/Rows"]
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_02ofc")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Background/MarginContainer/Rows/InputArea"]
+layout_mode = 2
+
+[node name="Caret" type="Label" parent="Background/MarginContainer/Rows/InputArea/HBoxContainer"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("1_v1gb1")
+theme_override_font_sizes/font_size = 28
+text = " > "
+
+[node name="Input" type="LineEdit" parent="Background/MarginContainer/Rows/InputArea/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_fonts/font = ExtResource("1_v1gb1")
+theme_override_font_sizes/font_size = 16
+theme_override_styles/focus = SubResource("StyleBoxEmpty_j3g0i")
+theme_override_styles/normal = SubResource("StyleBoxEmpty_daclj")
+max_length = 60
+caret_blink = true
+script = ExtResource("1_p87k6")
+
+[node name="ReplayManager" type="Node" parent="."]
+script = ExtResource("8_ktol1")
+
+[connection signal="text_submitted" from="Background/MarginContainer/Rows/InputArea/HBoxContainer/Input" to="." method="_on_input_text_submitted"]
+[connection signal="text_submitted" from="Background/MarginContainer/Rows/InputArea/HBoxContainer/Input" to="Background/MarginContainer/Rows/InputArea/HBoxContainer/Input" method="_on_Input_text_submitted"]
