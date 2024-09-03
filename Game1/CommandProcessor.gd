@@ -33,6 +33,9 @@ func process_command(input: String) -> String:
 	if words.size() > 2:
 		third_word = words[2].to_lower()
 		
+	if combat_manager.is_combat_active():
+		return combat_manager.process_action(first_word)
+		
 	match first_word:
 		"go":
 			return go(second_word)
@@ -50,8 +53,11 @@ func process_command(input: String) -> String:
 			return give(second_word, third_word)
 		"put":
 			return put(second_word, third_word)
-		"attack", "defend":
-			return combat_action(first_word)
+		"attack", "defend", "escape":
+			if combat_manager.is_combat_active():
+				return combat_manager.process_action(first_word)
+			else:
+				return "There's no enemy to fight!"
 		"equip":
 			return equip(second_word)
 		"status":
@@ -100,9 +106,9 @@ func take(second_word: String) -> String:
 		if second_word.to_lower() == item.item_name.to_lower():
 			current_room.remove_item(item)
 			player.take_item(item)
-			return "You take the " + item.item_name + "."
+			return "You took the " + item.item_name + "."
 	
-	return "You don't see that item here."
+	return "There is no " + second_word + " here."
 
 func drop(second_word: String) -> String:
 	if second_word == "":
@@ -112,7 +118,7 @@ func drop(second_word: String) -> String:
 		if second_word.to_lower() == item.item_name.to_lower():
 			player.drop_item(item)
 			current_room.add_item(item)
-			return "You drop the " + item.item_name + "."
+			return "You dropped the " + item.item_name + "."
 	
 	return "You don't have that item."
 
@@ -127,31 +133,34 @@ func use(second_word: String, third_word: String) -> String:
 		if second_word.to_lower() == item.item_name.to_lower():
 			match item.item_type:
 				Types.ItemTypes.KEY:
-					if third_word == "":
-						return "Use " + item.item_name + " on what?"
-					for exit in current_room.exits.values():
-						if exit.lock_name.to_lower() == third_word.to_lower() and exit.is_locked:
-							if exit == item.unlocks:
-								exit.unlock()
-								return "You unlock the " + exit.lock_name + "."
-							else:
-								return "The " + item.item_name + " doesn't fit the " + exit.lock_name + "."
-					return "There is no locked " + third_word + " here."
+					return use_key(item, third_word)
 				Types.ItemTypes.POTION:
-					var heal_amount = player.use_potion(item)
-					if heal_amount > 0:
-						if combat_manager.combat_active:
-							combat_manager.player_used_item()
-						return "You use the " + item.item_name + " and heal for " + str(heal_amount) + " health."
-					else:
-						return "You can't use that potion right now."
-				Types.ItemTypes.CONSUMABLE:
-					player.drop_item(item)
-					return "You use the " + item.item_name + ". " + item.use_value
+					return use_potion(item)
 				_:
 					return "You can't use that item."
 	
 	return "You don't have that item."
+
+func use_key(key: Item, direction: String) -> String:
+	if direction == "":
+		return "Use " + key.item_name + " where?"
+	
+	if current_room.exits.has(direction):
+		var exit = current_room.exits[direction]
+		if exit.is_locked and exit == key.unlocks:
+			exit.unlock()
+			player.drop_item(key)
+			return "You unlocked the " + exit.lock_name + "."
+		elif not exit.is_locked:
+			return "That exit is already unlocked."
+		else:
+			return "That key doesn't fit this lock."
+	else:
+		return "There is no exit in that direction."
+
+func use_potion(potion: Item) -> String:
+	var heal_amount = player.use_potion(potion)
+	return "You used the " + potion.item_name + " and healed for " + str(heal_amount) + " health."
 
 func talk(second_word: String) -> String:
 	if second_word == "":
@@ -208,16 +217,6 @@ func put(second_word: String, third_word: String) -> String:
 		_:
 			return "You can't put things there."
 
-func combat_action(action: String) -> String:
-	if not combat_manager or not combat_manager.combat_active:
-		return "There's no enemy to fight!"
-
-	var result = combat_manager.player_action(action)
-	if combat_manager.is_combat_over():
-		current_room.remove_enemy()
-		combat_manager.end_combat()
-	return result + "\n" + combat_manager.get_combat_status()
-
 func equip(second_word: String) -> String:
 	if second_word == "":
 		return "Equip what?"
@@ -232,11 +231,11 @@ func equip(second_word: String) -> String:
 	return "You don't have that item."
 
 func status() -> String:
-	var status = "Health: " + str(player.health) + "/" + str(player.max_health) + "\n"
-	status += "Equipped weapon: " + (player.equipped_weapon.item_name if player.equipped_weapon else "None") + "\n"
-	if combat_manager and combat_manager.enemy:
-		status += "Current enemy: " + combat_manager.enemy.enemy_name + " (Health: " + str(combat_manager.enemy.health) + ")"
-	return status
+	var status_string = "Health: " + str(player.health) + "/" + str(player.max_health) + "\n"
+	status_string += "Equipped weapon: " + (player.equipped_weapon.item_name if player.equipped_weapon else "None") + "\n"
+	if combat_manager.is_combat_active():
+		status_string += "Current enemy: " + combat_manager.enemy.enemy_name + " (Health: " + str(combat_manager.enemy.health) + ")"
+	return status_string
 
 func help() -> String:
 	return "You can use these commands:\n" + \
@@ -260,14 +259,29 @@ func change_room(new_room: GameRoom) -> String:
 	if new_room == null:
 		push_error("New room cannot be null")
 		return "Change room failed"
+	
+	var previous_room = current_room
 	current_room = new_room
 	
 	# Check for enemies in the new room
 	if new_room.has_enemy():
 		var enemy = new_room.get_enemy()
-		var combat_start_message = combat_manager.start_combat(player, enemy)
-		return new_room.get_full_description() + "\n\nWarning: " + combat_start_message + "\n" + combat_manager.get_combat_status()
+		combat_manager.start_combat(player, enemy, previous_room)
+		return new_room.get_full_description() + "\n\nWarning: Combat has started with " + enemy.enemy_name + "!\n" + combat_manager.get_combat_status()
 	else:
-		combat_manager.end_combat()
+		combat_manager.change_state(combat_manager.CombatState.INACTIVE)
 	
 	return new_room.get_full_description()
+
+
+func get_save_data() -> Dictionary:
+	return {
+		"current_room": current_room.room_name,
+		"player": player.get_save_data(),
+		"combat_manager": combat_manager.get_save_data()
+	}
+
+func load_save_data(data: Dictionary, room_manager: Node):
+	current_room = room_manager.get_node(data["current_room"])
+	player.load_save_data(data["player"])
+	combat_manager.load_save_data(data["combat_manager"], room_manager)

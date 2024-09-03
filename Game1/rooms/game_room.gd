@@ -155,3 +155,33 @@ func set_reverse_exit(direction: String, room: GameRoom, exit: Exit):
 			printerr("Tried to connect invalid direction: %s" % direction)
 
 	return exit
+
+
+func get_save_data() -> Dictionary:
+	return {
+		"room_name": room_name,
+		"room_description": room_description,
+		"exit_description": exit_description,
+		"exits": exits.keys(),
+		"npcs": npcs.map(func(npc): return npc.npc_name),
+		"items": items.map(func(item): return item.item_name),
+		"enemy": enemy.enemy_name if enemy else ""  # Changed null to an empty string
+	}
+
+func load_save_data(data: Dictionary):
+	room_name = data["room_name"]
+	room_description = data["room_description"]
+	exit_description = data["exit_description"]
+	
+	npcs.clear()
+	for npc_name in data["npcs"]:
+		npcs.append(load("res://npcs/" + npc_name + ".tres"))
+	
+	items.clear()
+	for item_name in data["items"]:
+		items.append(load("res://items/" + item_name + ".tres"))
+	
+	if data["enemy"] != "":
+		enemy = load("res://enemies/" + data["enemy"] + ".tres")
+	else:
+		enemy = null

@@ -6,4 +6,8 @@
 script = ExtResource("1_srre8")
 item_name = "Longsword"
 item_type = 1
-damage = 10
+use_value_string = ""
+damage_dice_type = 2
+damage_dice_count = 1
+damage_modifier = 1
+heal_amount = 0

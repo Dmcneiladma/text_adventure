@@ -6,7 +6,9 @@ class_name Item
 @export var use_value_string: String = ""
 
 # For weapons
-@export var damage: int = 0
+@export var damage_dice_type: DiceRoller.DiceType = DiceRoller.DiceType.D6
+@export var damage_dice_count: int = 1
+@export var damage_modifier: int = 0
 
 # For potions
 @export var heal_amount: int = 0
@@ -27,3 +29,13 @@ func update_use_value():
 			use_value = unlocks
 		_:
 			use_value = null
+
+func get_damage_string() -> String:
+	if item_type == Types.ItemTypes.WEAPON:
+		return DiceRoller.get_dice_string(damage_dice_type, damage_dice_count, damage_modifier)
+	return "0"
+
+func roll_damage() -> int:
+	if item_type == Types.ItemTypes.WEAPON:
+		return DiceRoller.roll(damage_dice_type, damage_dice_count, damage_modifier)
+	return 0

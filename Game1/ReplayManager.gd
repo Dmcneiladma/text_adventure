@@ -4,6 +4,9 @@ var command_processor = null
 var input_history: Array = []
 var is_replaying = false
 
+signal replay_input(input: String, response: String)
+signal reset_game
+
 func initialize(cmd_processor):
 	if cmd_processor == null:
 		push_error("Command processor cannot be null")
@@ -23,7 +26,7 @@ func load_game():
 	if file:
 		input_history = file.get_var()
 		file.close()
-		reset_game_state()
+		emit_signal("reset_game")  # Emit the signal before replaying inputs
 		replay_inputs()
 	else:
 		push_error("Failed to open save file for reading")
@@ -42,8 +45,8 @@ func replay_inputs():
 		emit_signal("replay_input", input, response)
 	is_replaying = false
 
-func reset_game_state():
+# New method to start a new game
+func new_game():
+	input_history.clear()
 	emit_signal("reset_game")
-
-signal replay_input(input: String, response: String)
-signal reset_game()
+	save_game()

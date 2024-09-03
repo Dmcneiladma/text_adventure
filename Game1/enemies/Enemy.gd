@@ -4,10 +4,14 @@ class_name Enemy
 @export var enemy_name: String = "Enemy"
 @export var health: int = 50
 @export var max_health: int = 50
-@export var damage: int = 5
+@export var damage_dice_type: DiceRoller.DiceType = DiceRoller.DiceType.D6
+@export var damage_dice_count: int = 1
+@export var damage_modifier: int = 0
 @export var defense: int = 2
 @export var agility: int = 5
 @export var experience_reward: int = 10
+
+@export var inventory: Array[Item] = []
 
 class LootItem:
 	var item: Item
@@ -17,7 +21,6 @@ class LootItem:
 		item = item_resource
 		drop_chance = chance
 
-# We'll use an array of strings to store the loot table data
 @export var loot_table_data: Array[String] = []
 
 var loot_table: Array[LootItem] = []
@@ -47,7 +50,7 @@ func is_alive() -> bool:
 	return health > 0
 
 func attack() -> int:
-	return damage
+	return DiceRoller.roll(damage_dice_type, damage_dice_count, damage_modifier)
 
 func heal(amount: int):
 	health += amount
@@ -61,11 +64,60 @@ func choose_action() -> String:
 	elif roll < 90:
 		return "defend"
 	else:
-		return "heal"
+		return "use_potion" if has_healing_potion() else "attack"
+
+func has_healing_potion() -> bool:
+	return inventory.any(func(item): return item.item_type == Types.ItemTypes.POTION)
+
+func use_healing_potion() -> int:
+	for item in inventory:
+		if item.item_type == Types.ItemTypes.POTION:
+			var heal_amount = item.heal_amount
+			inventory.erase(item)
+			heal(heal_amount)
+			return heal_amount
+	return 0
 
 func get_loot() -> Array[Item]:
-	var dropped_loot: Array[Item] = []
+	var dropped_loot = inventory.duplicate()
 	for loot_item in loot_table:
 		if randf() <= loot_item.drop_chance:
 			dropped_loot.append(loot_item.item)
+	inventory.clear()
 	return dropped_loot
+
+func defend():
+	defense += 2
+
+func get_save_data() -> Dictionary:
+	return {
+		"enemy_name": enemy_name,
+		"health": health,
+		"max_health": max_health,
+		"damage_dice_type": damage_dice_type,
+		"damage_dice_count": damage_dice_count,
+		"damage_modifier": damage_modifier,
+		"defense": defense,
+		"agility": agility,
+		"experience_reward": experience_reward,
+		"loot_table_data": loot_table_data,
+		"inventory": inventory.map(func(item): return item.get_save_data())
+	}
+
+func load_save_data(data: Dictionary):
+	enemy_name = data["enemy_name"]
+	health = data["health"]
+	max_health = data["max_health"]
+	damage_dice_type = data["damage_dice_type"]
+	damage_dice_count = data["damage_dice_count"]
+	damage_modifier = data["damage_modifier"]
+	defense = data["defense"]
+	agility = data["agility"]
+	experience_reward = data["experience_reward"]
+	loot_table_data = data["loot_table_data"]
+	inventory = data["inventory"].map(func(item_data): 
+		var item = load("res://items/" + item_data["item_name"] + ".tres")
+		item.load_save_data(item_data)
+		return item
+	)
+	update_loot_table()

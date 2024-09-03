@@ -60,3 +60,16 @@ func reset_rooms():
 	for room in get_children():
 		room.reset()
 	setup_rooms()
+
+
+func get_save_data() -> Dictionary:
+	var rooms_data = {}
+	for room in get_children():
+		rooms_data[room.name] = room.get_save_data()
+	return rooms_data
+
+func load_save_data(data: Dictionary):
+	for room_name in data.keys():
+		var room = get_node(room_name)
+		if room:
+			room.load_save_data(data[room_name])

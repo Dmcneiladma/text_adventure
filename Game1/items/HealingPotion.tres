@@ -4,8 +4,10 @@
 
 [resource]
 script = ExtResource("1_g16so")
-item_name = "Item"
+item_name = "Potion"
 item_type = 4
 use_value_string = ""
-damage = 0
+damage_dice_type = 1
+damage_dice_count = 0
+damage_modifier = 0
 heal_amount = 30

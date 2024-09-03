@@ -1,14 +1,19 @@
-[gd_resource type="Resource" script_class="Enemy" load_steps=2 format=3 uid="uid://chbfbvixd520s"]
+[gd_resource type="Resource" script_class="Enemy" load_steps=4 format=3 uid="uid://chbfbvixd520s"]
 
+[ext_resource type="Script" path="res://items/Item.gd" id="1_f5754"]
 [ext_resource type="Script" path="res://enemies/Enemy.gd" id="1_tynkx"]
+[ext_resource type="Resource" uid="uid://bxjr10topy21m" path="res://items/HealingPotion.tres" id="2_kybae"]
 
 [resource]
 script = ExtResource("1_tynkx")
-enemy_name = "Enemy"
-health = 50
+enemy_name = "Goblin"
+health = 5
 max_health = 50
-damage = 5
+damage_dice_type = 1
+damage_dice_count = 1
+damage_modifier = 0
 defense = 2
 agility = 5
 experience_reward = 10
+inventory = Array[ExtResource("1_f5754")]([ExtResource("2_kybae"), ExtResource("2_kybae")])
 loot_table_data = Array[String](["HealingPotion"])

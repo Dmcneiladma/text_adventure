@@ -7,6 +7,7 @@ var equipped_weapon: Item = null
 var defense: int = 0
 var experience: int = 0
 var level: int = 1
+var enemy_name: String = "Player"  # Added for compatibility with CombatManager
 
 func take_item(item: Item):
 	inventory.append(item)
@@ -40,7 +41,9 @@ func equip_weapon(weapon: Item):
 	return "You can't equip that."
 
 func attack() -> int:
-	return equipped_weapon.damage if equipped_weapon else 1
+	if equipped_weapon:
+		return equipped_weapon.roll_damage()
+	return DiceRoller.roll(DiceRoller.DiceType.D4)  # Unarmed attack
 
 func take_damage(damage: int) -> int:
 	var actual_damage = max(damage - defense, 0)
@@ -79,3 +82,28 @@ func level_up():
 
 func is_alive() -> bool:
 	return health > 0
+
+func heal(amount: int):
+	health = min(health + amount, max_health)
+
+func get_save_data() -> Dictionary:
+	return {
+		"inventory": inventory.map(func(item): return item.item_name),
+		"health": health,
+		"max_health": max_health,
+		"equipped_weapon": equipped_weapon.item_name if equipped_weapon else "",
+		"defense": defense,
+		"experience": experience,
+		"level": level
+	}
+
+func load_save_data(data: Dictionary):
+	inventory.clear()
+	for item_name in data["inventory"]:
+		inventory.append(load("res://items/" + item_name + ".tres"))
+	health = data["health"]
+	max_health = data["max_health"]
+	equipped_weapon = load("res://items/" + data["equipped_weapon"] + ".tres") if data["equipped_weapon"] != "" else null
+	defense = data["defense"]
+	experience = data["experience"]
+	level = data["level"]

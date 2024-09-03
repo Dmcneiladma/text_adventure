@@ -1,97 +1,136 @@
 extends Node
 
+signal combat_state_changed(state, message)
+signal combat_ended(result)
+
+enum CombatState {INACTIVE, PLAYER_TURN, ENEMY_TURN, ENDED}
+
 var player
 var enemy
-var is_player_turn: bool = true
-var combat_active: bool = false
+var current_state: CombatState = CombatState.INACTIVE
+var turn_count: int = 0
+var previous_room: GameRoom = null
 
-func start_combat(player_ref, enemy_ref):
+func start_combat(player_ref, enemy_ref, prev_room: GameRoom):
 	player = player_ref
 	enemy = enemy_ref
-	is_player_turn = true
-	combat_active = true
-	return "Combat started with " + enemy.enemy_name + "!"
+	previous_room = prev_room
+	current_state = CombatState.PLAYER_TURN
+	turn_count = 0
+	emit_signal("combat_state_changed", current_state, "Combat started with " + enemy.enemy_name + "!\n\n" + get_combat_status() + "\n\nWhat will you do?")
 
-func player_action(action: String) -> String:
-	if not combat_active:
-		return "There's no active combat."
+func process_action(action: String) -> String:
+	match current_state:
+		CombatState.PLAYER_TURN:
+			var player_result = process_player_action(action)
+			if current_state == CombatState.ENEMY_TURN:
+				var enemy_result = process_enemy_turn()
+				return player_result + "\n\n" + enemy_result
+			return player_result
+		CombatState.ENEMY_TURN:
+			return process_enemy_turn()
+		_:
+			return "No active combat."
 
-	if not is_player_turn:
-		return "It's not your turn!"
-
+func process_player_action(action: String) -> String:
 	var result = ""
 	match action:
 		"attack":
-			var damage = player.attack()
-			var actual_damage = enemy.take_damage(damage)
-			result = "You attack the " + enemy.enemy_name + " for " + str(actual_damage) + " damage."
+			result = perform_attack(player, enemy)
 		"defend":
-			player.defend()
-			result = "You take a defensive stance."
+			result = perform_defend(player)
+		"use_item":
+			result = "Item use not implemented yet."
+		"escape":
+			result = attempt_escape(player)
 		_:
-			return "Invalid action. Choose 'attack' or 'defend'."
+			return "Invalid action. Choose 'attack', 'defend', 'use_item', or 'escape'."
 
 	if not enemy.is_alive():
-		combat_active = false
-		var loot = enemy.get_loot()
-		var loot_message = handle_loot(loot)
-		player.gain_experience(enemy.experience_reward)
-		return result + " The " + enemy.enemy_name + " has been defeated!\n" + loot_message
+		change_state(CombatState.ENDED, "victory")
+		emit_signal("combat_ended", "victory")
+		return result + "\n\nYou have defeated the " + enemy.enemy_name + "!"
 
-	is_player_turn = false
-	return result + "\n" + enemy_turn()
+	change_state(CombatState.ENEMY_TURN)
+	return result + "\n\n" + get_combat_status()
 
-func handle_loot(loot: Array[Item]) -> String:
-	if loot.is_empty():
-		return "The enemy dropped nothing."
-	
-	var loot_message = "The enemy dropped: "
-	for item in loot:
-		player.take_item(item)
-		loot_message += item.item_name + ", "
-	
-	return loot_message.trim_suffix(", ")
-
-func player_used_item():
-	is_player_turn = false
-	enemy_turn()
-
-func enemy_turn() -> String:
-	if not combat_active:
-		return "There's no active combat."
-
+func process_enemy_turn() -> String:
 	var action = enemy.choose_action()
-	var result = ""
+	var result = enemy.enemy_name + "'s turn: "
 
 	match action:
 		"attack":
-			var damage = enemy.attack()
-			var actual_damage = player.take_damage(damage)
-			result = enemy.enemy_name + " attacks you for " + str(actual_damage) + " damage."
+			result += perform_attack(enemy, player)
 		"defend":
-			enemy.defense += 2
-			result = enemy.enemy_name + " takes a defensive stance."
-		"heal":
-			var heal_amount = min(10, enemy.max_health - enemy.health)
-			enemy.heal(heal_amount)
-			result = enemy.enemy_name + " heals for " + str(heal_amount) + " health."
+			result += perform_defend(enemy)
+		"use_potion":
+			result += perform_heal(enemy)
 
 	if not player.is_alive():
-		combat_active = false
-		return result + " You have been defeated!"
+		change_state(CombatState.ENDED, "defeat")
+		emit_signal("combat_ended", "defeat")
+		return result + "\n\nYou have been defeated!"
 
-	is_player_turn = true
-	return result
+	change_state(CombatState.PLAYER_TURN)
+	turn_count += 1
+	return result + "\n\n" + get_combat_status() + "\n\nWhat will you do?"
+
+func perform_attack(attacker, defender) -> String:
+	var damage = attacker.attack()
+	var actual_damage = defender.take_damage(damage)
+	var attack_string = attacker.enemy_name + " attacks " + defender.enemy_name
+	
+	if attacker == player and player.equipped_weapon:
+		attack_string += " with " + player.equipped_weapon.item_name + " (" + player.equipped_weapon.get_damage_string() + ")"
+	elif attacker == enemy:
+		attack_string += " (" + DiceRoller.get_dice_string(enemy.damage_dice_type, enemy.damage_dice_count, enemy.damage_modifier) + ")"
+	
+	attack_string += " for " + str(actual_damage) + " damage."
+	return attack_string
+
+func perform_defend(character) -> String:
+	character.defend()
+	return character.enemy_name + " takes a defensive stance."
+
+func perform_heal(character) -> String:
+	var heal_amount = character.use_healing_potion()
+	return character.enemy_name + " uses a healing potion and recovers " + str(heal_amount) + " health."
+
+func attempt_escape(character) -> String:
+	var escape_chance = 0.3 + (0.1 * turn_count)  # Escape chance increases each turn
+	if randf() < escape_chance:
+		change_state(CombatState.ENDED, "escape")
+		emit_signal("combat_ended", "escape")
+		return character.enemy_name + " successfully escaped from combat!"
+	else:
+		return character.enemy_name + " failed to escape!"
 
 func get_combat_status() -> String:
-	if not combat_active:
+	if current_state == CombatState.INACTIVE:
 		return "No active combat."
-	return "Player Health: " + str(player.health) + "/" + str(player.max_health) + "\n" + \
+	return "Combat Status:\n" + \
+		   "Player Health: " + str(player.health) + "/" + str(player.max_health) + "\n" + \
 		   enemy.enemy_name + " Health: " + str(enemy.health) + "/" + str(enemy.max_health)
 
-func is_combat_over() -> bool:
-	return not combat_active
+func change_state(new_state: CombatState, result: String = ""):
+	current_state = new_state
+	emit_signal("combat_state_changed", current_state, result)
 
-func end_combat():
-	combat_active = false
-	enemy = null
+func is_combat_active() -> bool:
+	return current_state != CombatState.INACTIVE and current_state != CombatState.ENDED
+
+func get_save_data() -> Dictionary:
+	return {
+		"current_state": current_state,
+		"turn_count": turn_count,
+		"previous_room": previous_room.room_name if previous_room else "",
+		"enemy": enemy.get_save_data() if enemy else null
+	}
+
+func load_save_data(data: Dictionary, room_manager: Node):
+	current_state = data["current_state"]
+	turn_count = data["turn_count"]
+	previous_room = room_manager.get_node(data["previous_room"]) if data["previous_room"] != "" else null
+	if data["enemy"]:
+		enemy = load("res://enemies/" + data["enemy"]["enemy_name"] + ".tres")
+		enemy.load_save_data(data["enemy"])
